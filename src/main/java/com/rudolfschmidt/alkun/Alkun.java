@@ -19,49 +19,64 @@ public class Alkun {
 
 	private final List<Router> routers;
 	private final ExceptionRoutes exceptions;
-	private BiFunction<String, Optional<Object>, String> engine;
+	private final BiFunction<String, Optional<Object>, String> renderer;
 
-	public Alkun() {
-		this.routers = new ArrayList<>();
-		this.exceptions = new ExceptionRoutes();
+	public static Alkun newInstance() {
+		return new Alkun(new ArrayList<>(), new ExceptionRoutes(), (template, model) -> template);
 	}
 
-	public void loglevel(Level level) {
+	private Alkun(List<Router> routers,
+				  ExceptionRoutes exceptions,
+				  BiFunction<String, Optional<Object>, String> renderer) {
+
+		this.routers = routers;
+		this.exceptions = exceptions;
+		this.renderer = renderer;
+	}
+
+	public Alkun loglevel(Level level) {
 		Logger logger = Logger.getLogger("");
 		logger.setLevel(level);
 		Arrays.stream(logger.getHandlers()).forEach(handler -> handler.setLevel(level));
+		return this;
 	}
 
-	public BiFunction<String, Optional<Object>, String> engine() {
-		return this.engine;
+	public Alkun render(BiFunction<String, Optional<Object>, String> engine) {
+		return new Alkun(routers, exceptions, engine);
 	}
 
-	public void engine(BiFunction<String, Optional<Object>, String> engine) {
-		this.engine = engine;
-	}
-
-	public <T extends Exception> void exception(Class<T> clazz, ExceptionRoute<T> route) {
+	public <T extends Exception> Alkun exception(Class<T> clazz, ExceptionRoute<T> route) {
 		exceptions.addExceptionRoute(clazz, route);
+		return this;
 	}
 
-	public Router route(String path) {
-		Router route = new Router(path);
+	public Router route(String... paths) {
+		Router route = new Router(paths);
 		routers.add(route);
 		return route;
 	}
 
 	public void listen(int httpPort) {
-		if (!Optional.ofNullable(engine).isPresent()) {
-			LOGGER.log(Level.INFO, "No Render Engine set");
-		}
 		try {
 			HttpServer server = HttpServer.create(new InetSocketAddress(httpPort), 0);
 			server.setExecutor(Executors.newFixedThreadPool(20));
-			server.createContext("/", new ServerRouter(this, routers, exceptions));
+			server.createContext("/", new ServerRouter(this));
 			server.start();
 			LOGGER.info("Server started at " + httpPort);
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, "Failed Server Start", e);
 		}
+	}
+
+	protected BiFunction<String, Optional<Object>, String> renderer() {
+		return renderer;
+	}
+
+	protected List<Router> routers() {
+		return routers;
+	}
+
+	protected ExceptionRoutes exceptions() {
+		return exceptions;
 	}
 }

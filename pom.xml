@@ -5,10 +5,10 @@
 
     <groupId>com.rudolfschmidt</groupId>
     <artifactId>alkun</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 
-    <name>com.rudolfschmidt:majara</name>
-    <description>The Alkun HTTP server in native java api</description>
+    <name>com.rudolfschmidt:alkun</name>
+    <description>The Alkun HTTP server</description>
     <url>http://www.rudolfschmidt.com</url>
 
     <licenses>

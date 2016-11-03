@@ -29,34 +29,34 @@ public class MethodRoute {
 	}
 
 	public MethodRoute post(Route route) {
-		return router.use(route);
+		return router.post(route);
 	}
 
 	public MethodRoute put(Route route) {
-		return router.use(route);
+		return router.put(route);
 	}
 
 	public MethodRoute delete(Route route) {
-		return router.use(route);
+		return router.delete(route);
 	}
 
 	public MethodRoute head(Route route) {
-		return router.use(route);
+		return router.head(route);
 	}
 
 	public MethodRoute options(Route route) {
-		return router.use(route);
+		return router.options(route);
 	}
 
-	public HttpMethod getMethod() {
+	public HttpMethod method() {
 		return method;
 	}
 
-	public Route getRoute() {
+	public Route route() {
 		return route;
 	}
 
-	public ExceptionRoutes getExceptions() {
+	public ExceptionRoutes exceptions() {
 		return exceptions;
 	}
 }

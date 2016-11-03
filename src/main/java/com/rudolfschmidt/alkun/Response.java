@@ -56,12 +56,12 @@ public class Response {
 
 	public void render(String template) throws IOException {
 		defaultContentType(MediaType.TEXT_HTML);
-		write(alkun.engine().apply(template, Optional.empty()));
+		write(alkun.renderer().apply(template, Optional.empty()));
 	}
 
 	public void render(String template, Object model) throws IOException {
 		defaultContentType(MediaType.TEXT_HTML);
-		write(alkun.engine().apply(template, Optional.ofNullable(model)));
+		write(alkun.renderer().apply(template, Optional.ofNullable(model)));
 	}
 
 	public void send(URL url) throws IOException {
@@ -122,7 +122,7 @@ public class Response {
 	public void redirect(String location) throws IOException {
 		Headers responseHeaders = exchange.getResponseHeaders();
 		responseHeaders.set(HttpHeader.LOCATION, location);
-		status(HttpStatus.TEMPORARY_REDIRECT_307);
+		status(HttpStatus.MOVED_PERMANENTLY_301);
 	}
 
 	public void type(MediaType mediaType) {
@@ -144,6 +144,10 @@ public class Response {
 
 	public void attribute(String key, String value) {
 		exchange.setAttribute(key, value);
+	}
+
+	public void attribute(Object attribute) {
+		exchange.setAttribute(attribute.getClass().getSimpleName(), attribute);
 	}
 
 	/**

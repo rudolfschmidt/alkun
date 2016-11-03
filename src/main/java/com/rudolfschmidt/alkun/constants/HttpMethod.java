@@ -7,5 +7,5 @@ public enum HttpMethod {
     PUT,
     DELETE,
     HEAD,
-    OPTIONS, method;
+    OPTIONS;
 }

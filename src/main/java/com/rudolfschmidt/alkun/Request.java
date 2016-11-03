@@ -51,6 +51,10 @@ public class Request {
 		return uri().getPath();
 	}
 
+	public String method() {
+		return exchange.getRequestMethod();
+	}
+
 	public String basePath() {
 		return path.split(RequestConstants.PATH_PARAM_DELIMITER)[0];
 	}
@@ -105,6 +109,10 @@ public class Request {
 
 	public Object attribute(String key) {
 		return exchange.getAttribute(key);
+	}
+
+	public <T> T attribute(Class<T> attribute) {
+		return attribute.cast(exchange.getAttribute(attribute.getSimpleName()));
 	}
 
 	public List<Part> multipart() throws IOException {

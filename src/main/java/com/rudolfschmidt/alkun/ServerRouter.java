@@ -1,8 +1,6 @@
 package com.rudolfschmidt.alkun;
 
-import com.rudolfschmidt.alkun.constants.HttpMethod;
 import com.rudolfschmidt.alkun.constants.HttpStatus;
-import com.rudolfschmidt.alkun.constants.RequestConstants;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -12,21 +10,16 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServerRouter implements HttpHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(ServerRouter.class.getName());
 
 	private final Alkun alkun;
-	private final List<Router> routers;
-	private final ExceptionRoutes exceptions;
 
-	public ServerRouter(Alkun alkun,
-						List<Router> routers,
-						ExceptionRoutes exceptions) {
+	public ServerRouter(Alkun alkun) {
 		this.alkun = alkun;
-		this.routers = routers;
-		this.exceptions = exceptions;
 	}
 
 	@Override
@@ -40,100 +33,62 @@ public class ServerRouter implements HttpHandler {
 
 	private void process(HttpExchange exchange) throws IOException {
 
-		List<Router> filtered = routers.stream().filter(router -> {
+		String requestedPath = exchange.getRequestURI().getPath();
+		List<Router> routers = alkun.routers().stream()
+				.peek(router -> LOGGER.config("[PRE_FILTER]:[" + requestedPath + "]:" + router))
+				.filter(router -> Stream.of(router.paths())
+						.anyMatch(providedPath -> Filters.filterPath(providedPath, requestedPath))
+				).collect(Collectors.toList());
 
-			String providedPath = router.getPath();
-			String requestedPath = exchange.getRequestURI().getPath();
-
-			LOGGER.config("requested route: " + requestedPath + ", provided route: " + providedPath);
-
-			if (providedPath.equals(requestedPath)) {
-				return true;
-			}
-
-			if (providedPath.endsWith("/*")) {
-				return requestedPath.startsWith(providedPath.substring(0, providedPath.length() - 1));
-			}
-
-			List<String> providedTokens = LinkTokenizer.tokenize(providedPath, RequestConstants.PATH_TOKEN);
-			List<String> requestedTokens = LinkTokenizer.tokenize(requestedPath, RequestConstants.PATH_TOKEN);
-
-			if (providedTokens.size() != requestedTokens.size()) {
-				return false;
-			}
-
-			for (int i = 0; i < providedTokens.size(); i++) {
-				String providedToken = providedTokens.get(i);
-				String requestedToken = requestedTokens.get(i);
-				if (!providedToken.startsWith(RequestConstants.PATH_PARAM_DELIMITER)
-						&& !providedToken.equals(requestedToken)) {
-					return false;
-				}
-			}
-
-			return true;
-
-		}).collect(Collectors.toList());
-
-		if (filtered.isEmpty()) {
-			String message = "404 - no matched route found";
-			exchange.sendResponseHeaders(HttpStatus.NOT_FOUND_404.status(), message.length());
-			exchange.getResponseBody().write(message.getBytes());
+		if (routers.isEmpty()) {
+			exchange.sendResponseHeaders(HttpStatus.NOT_FOUND_404.status(), 0);
 			return;
 		}
 
 		String requestMethod = exchange.getRequestMethod();
-		filtered = filtered.stream()
-				.filter(router -> router.getRoutes().stream().anyMatch(methodRoute ->
-						filterMethod(methodRoute, requestMethod)))
-				.collect(Collectors.toList());
-
-		if (filtered.isEmpty()) {
+		if (routers.stream().noneMatch(router -> router.routes().stream()
+				.anyMatch(route -> filterMethod(route, requestMethod)))) {
 			exchange.sendResponseHeaders(HttpStatus.METHOD_NOT_ALLOWED_405.status(), 0);
 			return;
 		}
 
-		for (Router router : filtered) {
+		for (Router router : routers) {
 
-			AtomicBoolean next = new AtomicBoolean(false);
-			Request request = new Request(exchange, router.getPath());
-			Response response = new Response(alkun, exchange, next);
+			for (String path : Stream.of(router.paths())
+					.filter(providedPath -> Filters.filterPath(providedPath, requestedPath))
+					.collect(Collectors.toList())) {
 
-			List<MethodRoute> methodMatched = router.getRoutes().stream()
-					.filter(mr -> filterMethod(mr, requestMethod))
-					.collect(Collectors.toList());
+				AtomicBoolean next = new AtomicBoolean(false);
+				Request request = new Request(exchange, path);
+				Response response = new Response(alkun, exchange, next);
 
-			for (MethodRoute methodRoute : methodMatched) {
+				for (MethodRoute methodRoute : router.routes().stream()
+						.filter(route -> filterMethod(route, requestMethod))
+						.collect(Collectors.toList())) {
 
-				next.set(false);
+					next.set(false);
 
-				try {
-					methodRoute.getRoute().process(request, response);
-				} catch (Exception e) {
-					execute(exchange, e, request, response
-							, methodRoute.getExceptions()
-							, router.getExceptions()
-							, exceptions);
-					return;
+					try {
+						methodRoute.route().process(request, response);
+					} catch (Exception e) {
+						execute(exchange, e, request, response
+								, methodRoute.exceptions()
+								, router.exceptions()
+								, alkun.exceptions());
+						return;
+					}
+
+					if (!next.get()) {
+						return;
+					}
+
 				}
-
-				if (!next.get()) {
-					break;
-				}
-
 			}
-
-			if (!next.get()) {
-				break;
-			}
-
 		}
 
-		if (exchange.getResponseCode() < 0) {
-			String message = "404 - no content sent";
-			exchange.sendResponseHeaders(HttpStatus.NOT_FOUND_404.status(), message.length());
-			exchange.getResponseBody().write(message.getBytes());
-		}
+//		if (exchange.getResponseCode() < 0) {
+//			exchange.sendResponseHeaders(HttpStatus.OK_200.status(), 0);
+//		}
 	}
 
 	private void execute(HttpExchange exchange, Exception exception,
@@ -157,8 +112,7 @@ public class ServerRouter implements HttpHandler {
 		}
 	}
 
-	private boolean filterMethod(MethodRoute methodRoute, String requestedMethod) {
-		return methodRoute.getMethod().toString().equals(requestedMethod)
-				|| methodRoute.getMethod() == HttpMethod.ANY;
+	private boolean filterMethod(MethodRoute route, String requestedMethod) {
+		return Filters.filterMethod(route.method().name(), requestedMethod);
 	}
 }

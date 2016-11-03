@@ -14,7 +14,7 @@ public class StaticRoute implements Route {
 
     @Override
     public void process(Request req, Response res) throws Exception {
-        String normalizedPath = req.path().replaceFirst(req.basePath(), "");
+		String normalizedPath = req.path().replaceFirst(req.basePath(), "");
         Path filePath = Paths.get(staticFolder, normalizedPath);
         if (Files.isRegularFile(filePath)) {
             res.sendFile(filePath);
