@@ -1,15 +1,17 @@
 package com.rudolfschmidt.alkun;
 
+import com.rudolfschmidt.alkun.handlers.AlkunHandler;
+import com.rudolfschmidt.alkun.processes.Process;
+import com.rudolfschmidt.alkun.routes.RouteModule;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,66 +19,53 @@ public class Alkun {
 
 	private static final Logger LOGGER = Logger.getLogger(Alkun.class.getName());
 
-	private final List<Router> routers;
-	private final ExceptionRoutes exceptions;
-	private final BiFunction<String, Optional<Object>, String> renderer;
+	private final Deque<Process> processes = new ArrayDeque<>();
 
-	public static Alkun newInstance() {
-		return new Alkun(new ArrayList<>(), new ExceptionRoutes(), (template, model) -> template);
-	}
+	private Integer httpPort;
+	private Integer maxThreads = 20;
 
-	private Alkun(List<Router> routers,
-				  ExceptionRoutes exceptions,
-				  BiFunction<String, Optional<Object>, String> renderer) {
-
-		this.routers = routers;
-		this.exceptions = exceptions;
-		this.renderer = renderer;
-	}
-
-	public Alkun loglevel(Level level) {
-		Logger logger = Logger.getLogger("");
+	public void loglevel(Level level) {
+		final Logger logger = Logger.getLogger("");
 		logger.setLevel(level);
-		Arrays.stream(logger.getHandlers()).forEach(handler -> handler.setLevel(level));
-		return this;
-	}
-
-	public Alkun render(BiFunction<String, Optional<Object>, String> engine) {
-		return new Alkun(routers, exceptions, engine);
-	}
-
-	public <T extends Exception> Alkun exception(Class<T> clazz, ExceptionRoute<T> route) {
-		exceptions.addExceptionRoute(clazz, route);
-		return this;
-	}
-
-	public Router route(String... paths) {
-		Router route = new Router(paths);
-		routers.add(route);
-		return route;
-	}
-
-	public void listen(int httpPort) {
-		try {
-			HttpServer server = HttpServer.create(new InetSocketAddress(httpPort), 0);
-			server.setExecutor(Executors.newFixedThreadPool(20));
-			server.createContext("/", new ServerRouter(this));
-			server.start();
-			LOGGER.info("Server started at " + httpPort);
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE, "Failed Server Start", e);
+		for (Handler handler : logger.getHandlers()) {
+			handler.setLevel(level);
 		}
 	}
 
-	protected BiFunction<String, Optional<Object>, String> renderer() {
-		return renderer;
+	public void port(int httpPort) {
+		this.httpPort = httpPort;
 	}
 
-	protected List<Router> routers() {
-		return routers;
+	public void threadPool(int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 
-	protected ExceptionRoutes exceptions() {
-		return exceptions;
+	public void routes(RouteModule routeModule) {
+		routeModule.init();
+		processes.addAll(routeModule.getProcesses());
+	}
+
+	/**
+	 * Start the Alkun Server
+	 */
+	public void start() {
+
+		Objects.requireNonNull(httpPort, "no port number provided");
+
+		final HttpServer server;
+		try {
+			server = HttpServer.create(new InetSocketAddress(httpPort), 0);
+		} catch (IOException e) {
+			LOGGER.log(Level.SEVERE, "Server Start Error", e);
+			return;
+		}
+
+		server.setExecutor(Executors.newFixedThreadPool(maxThreads));
+		server.createContext("/", new AlkunHandler(processes));
+
+		server.start();
+
+		LOGGER.log(Level.INFO, "Start Alkun at " + httpPort);
+
 	}
 }
