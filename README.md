@@ -1,4 +1,4 @@
-# alkun
+# Alkun (Java Http Server)
 Alkun was created because of a lot of frustration about the spring boot project.
 
 Spring is a great project but faces performance and usability issues. The issues come from a complex code structure that has grown historically. Because of a lot of nested objects and functions the performance is not so much great and the spring code itself is hard to extend and to develop, even for the project maintainers like you can see here: https://github.com/spring-projects/spring-boot/issues/5834
