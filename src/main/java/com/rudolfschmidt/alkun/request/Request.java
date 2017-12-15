@@ -1,8 +1,8 @@
 package com.rudolfschmidt.alkun.request;
 
 import com.rudolfschmidt.alkun.http.HttpMethod;
-import com.rudolfschmidt.alkun.server.PathTokens;
 import com.rudolfschmidt.alkun.server.PathTokenizer;
+import com.rudolfschmidt.alkun.server.PathTokens;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -29,6 +29,12 @@ public class Request {
 	) {
 		this.httpExchange = httpExchange;
 		this.configuredPath = configuredPath;
+	}
+
+	public Request(
+			final HttpExchange httpExchange
+	) {
+		this(httpExchange, null);
 	}
 
 	public Optional<String> param(String identifier) throws UnsupportedEncodingException {
@@ -70,7 +76,7 @@ public class Request {
 				.map(str -> str.split("="))
 				.filter(arr -> arr[0].equals(identifier))
 				.findAny()
-				.map(arr -> arr[1]);
+				.map(arr -> arr.length < 2 ? "" : arr[1]);
 
 	}
 

@@ -1,9 +1,6 @@
 package com.rudolfschmidt.alkun.handlers;
 
-import com.rudolfschmidt.alkun.processes.ExceptionProcess;
-import com.rudolfschmidt.alkun.processes.FilterProcess;
-import com.rudolfschmidt.alkun.processes.MethodPathProcess;
-import com.rudolfschmidt.alkun.processes.PathProcess;
+import com.rudolfschmidt.alkun.processes.*;
 import com.rudolfschmidt.alkun.request.Request;
 import com.rudolfschmidt.alkun.response.Response;
 import com.sun.net.httpserver.HttpExchange;
@@ -28,7 +25,7 @@ class ExceptionRouteHandler implements RouteHandler {
 			return true;
 		}
 
-		final Request request = new Request(httpExchange, null);
+		final Request request = new Request(httpExchange);
 		final Response response = new Response(httpExchange);
 		final T castedException = process.exceptionClass.cast(exception);
 
@@ -43,6 +40,11 @@ class ExceptionRouteHandler implements RouteHandler {
 
 	@Override
 	public boolean handle(PathProcess process) throws Exception {
+		return true;
+	}
+
+	@Override
+	public boolean handle(MethodProcess process) throws Exception {
 		return true;
 	}
 

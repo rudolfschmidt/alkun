@@ -17,9 +17,8 @@ public class Parameters {
 	public void add(String key, String value) {
 
 		final String k = Optional.ofNullable(key).filter(str -> !str.isEmpty()).orElseThrow(IllegalArgumentException::new);
-		final String v = Optional.ofNullable(value).orElseThrow(IllegalArgumentException::new);
 
-		parameters.add(new Parameter(k, v));
+		Optional.ofNullable(value).ifPresent(v -> parameters.add(new Parameter(k, v)));
 
 	}
 
@@ -48,7 +47,7 @@ public class Parameters {
 
 	}
 
-	public <R> Stream<R> map(Function<Parameter, ? extends R> mapper){
+	public <R> Stream<R> map(Function<Parameter, ? extends R> mapper) {
 
 		return parameters.stream().map(mapper);
 

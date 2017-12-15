@@ -8,7 +8,7 @@
     <version>3.0</version>
 
     <name>com.rudolfschmidt:alkun</name>
-    <description>The Alkun HTTP server for REST webservices</description>
+    <description>The Alkun HTTP server</description>
     <url>http://www.rudolfschmidt.com</url>
 
     <licenses>

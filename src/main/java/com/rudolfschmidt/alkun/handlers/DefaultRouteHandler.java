@@ -1,11 +1,8 @@
 package com.rudolfschmidt.alkun.handlers;
 
 import com.rudolfschmidt.alkun.http.HttpMethod;
+import com.rudolfschmidt.alkun.processes.*;
 import com.rudolfschmidt.alkun.server.PathTokens;
-import com.rudolfschmidt.alkun.processes.ExceptionProcess;
-import com.rudolfschmidt.alkun.processes.FilterProcess;
-import com.rudolfschmidt.alkun.processes.MethodPathProcess;
-import com.rudolfschmidt.alkun.processes.PathProcess;
 import com.rudolfschmidt.alkun.request.Request;
 import com.rudolfschmidt.alkun.response.Response;
 import com.rudolfschmidt.alkun.server.PathTokenizer;
@@ -26,7 +23,7 @@ public class DefaultRouteHandler implements RouteHandler {
 	@Override
 	public boolean handle(FilterProcess process) throws Exception {
 
-		final Request request = new Request(httpExchange, null);
+		final Request request = new Request(httpExchange);
 		final Response response = new Response(httpExchange);
 
 		return process.route.process(request, response).isNext();
@@ -41,6 +38,20 @@ public class DefaultRouteHandler implements RouteHandler {
 		}
 
 		final Request request = new Request(httpExchange, process.path);
+		final Response response = new Response(httpExchange);
+
+		return process.route.process(request, response).isNext();
+
+	}
+
+	@Override
+	public boolean handle(MethodProcess process) throws Exception {
+
+		if (!acceptMethod(httpExchange.getRequestMethod(), process.method)) {
+			return true;
+		}
+
+		final Request request = new Request(httpExchange);
 		final Response response = new Response(httpExchange);
 
 		return process.route.process(request, response).isNext();
@@ -84,8 +95,8 @@ public class DefaultRouteHandler implements RouteHandler {
 			return true;
 		}
 
-		if (providedPath.endsWith("/*")) {
-			return requestedPath.startsWith(providedPath.substring(0, providedPath.length() - 2));
+		if (providedPath.endsWith("*")) {
+			return requestedPath.startsWith(providedPath.substring(0, providedPath.length() - 1));
 		}
 
 		final List<String> requested = PathTokenizer.tokenizePath(requestedPath);
