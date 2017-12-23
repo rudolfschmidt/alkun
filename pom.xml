@@ -5,11 +5,11 @@
 
     <groupId>com.rudolfschmidt</groupId>
     <artifactId>alkun</artifactId>
-    <version>3.0</version>
+    <version>4.0</version>
 
     <name>com.rudolfschmidt:alkun</name>
-    <description>The Alkun HTTP server</description>
-    <url>http://www.rudolfschmidt.com</url>
+    <description>The Alkun HTTP Server for Java9</description>
+    <url>https://www.rudolfschmidt.com</url>
 
     <licenses>
         <license>
@@ -21,7 +21,7 @@
     <developers>
         <developer>
             <name>Rudolf Schmidt</name>
-            <email>mail@rudolfschmidt.com</email>
+            <email>info@rudolfschmidt.com</email>
         </developer>
     </developers>
 
