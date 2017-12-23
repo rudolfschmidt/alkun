@@ -5,7 +5,7 @@
 
     <groupId>com.rudolfschmidt</groupId>
     <artifactId>alkun</artifactId>
-    <version>4.0</version>
+    <version>3.1.0</version>
 
     <name>com.rudolfschmidt:alkun</name>
     <description>The Alkun HTTP Server</description>
