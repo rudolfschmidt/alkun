@@ -8,7 +8,7 @@
     <version>4.0</version>
 
     <name>com.rudolfschmidt:alkun</name>
-    <description>The Alkun HTTP Server for Java9</description>
+    <description>The Alkun HTTP Server</description>
     <url>https://www.rudolfschmidt.com</url>
 
     <licenses>
