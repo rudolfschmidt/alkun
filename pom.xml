@@ -5,10 +5,10 @@
 
     <groupId>com.rudolfschmidt</groupId>
     <artifactId>alkun</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
 
     <name>com.rudolfschmidt:alkun</name>
-    <description>The Alkun HTTP Server</description>
+    <description>The Alkun Server, optimized for HTTP2 and Java9</description>
     <url>https://www.rudolfschmidt.com</url>
 
     <licenses>
@@ -31,11 +31,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.9</maven.compiler.source>
+        <maven.compiler.target>1.9</maven.compiler.target>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.rudolfschmidt.http</groupId>
+            <artifactId>http</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -85,15 +90,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.0.0-M1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -107,6 +104,15 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

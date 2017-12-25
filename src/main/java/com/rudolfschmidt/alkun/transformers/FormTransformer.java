@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.rudolfschmidt.alkun.http.encoder.Encoder.decode;
+import static com.rudolfschmidt.http.encoder.Encoder.decode;
 
 public class FormTransformer {
 
