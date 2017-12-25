@@ -5,7 +5,20 @@ Spring is a great project but faces performance and usability issues. The issues
 
 Software needs to be easy, simple and most important maintainable! Alkun does only what it is supposed to be, it translates http commands and make them accessable through a java api. Not less and not more.
 
-## Usage
+## Maven
+
+### Java9
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.rudolfschmidt</groupId>
+        <artifactId>alkun</artifactId>
+        <version>4.0.0</version>
+    </dependency>
+</dependencies>
+```
+
+### Java8
 ```xml
 <dependencies>
     <dependency>
