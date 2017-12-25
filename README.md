@@ -11,7 +11,7 @@ Software needs to be easy, simple and most important maintainable! Alkun does on
     <dependency>
         <groupId>com.rudolfschmidt</groupId>
         <artifactId>alkun</artifactId>
-        <version>3.0</version>
+        <version>3.1.0</version>
     </dependency>
 </dependencies>
 ```
